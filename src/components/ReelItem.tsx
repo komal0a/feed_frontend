@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import  { useRef, useEffect, useState } from 'react';
 import { Heart, ShoppingBag, MessageCircle, MapPin } from 'lucide-react';
 import CommentsSheet from './CommentsSheet';
 import { loadStripe } from '@stripe/stripe-js';
@@ -138,8 +138,7 @@ try {
 
 return (
   <div className="h-screen w-full snap-start relative flex items-center justify-center bg-black overflow-hidden">
-
-    {/* 1. The Video */}
+    {/* Video */}
     <video
       ref={videoRef}
       src={reel.videoUrl}
@@ -154,23 +153,18 @@ return (
       }}
     />
 
-    {/* 2. Social Interaction Bar */}
+    {/* Right Action Buttons */}
     <div className="absolute right-4 bottom-32 flex flex-col gap-6 text-white items-center z-10">
-
       <button
         onClick={handleLike}
         className="p-3 bg-black/40 rounded-full backdrop-blur-md active:scale-90 transition-transform flex flex-col items-center gap-1"
       >
         <Heart
-          className={`w-6 h-6 transition-colors ${
-            isLiked
-              ? "fill-red-500 text-red-500"
-              : "text-white"
+          className={`w-6 h-6 ${
+            isLiked ? "fill-red-500 text-red-500" : "text-white"
           }`}
         />
-        <span className="text-xs font-semibold">
-          {likeCount}
-        </span>
+        <span className="text-xs font-semibold">{likeCount}</span>
       </button>
 
       <button
@@ -182,12 +176,10 @@ return (
           {reel.commentCount || 0}
         </span>
       </button>
-
     </div>
 
-    {/* 3. Bottom Overlay */}
+    {/* Bottom Info */}
     <div className="absolute bottom-0 left-0 right-0 p-6 pb-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent text-white flex flex-col gap-4 z-10 pointer-events-none">
-
       <div className="pointer-events-auto">
         <p className="text-sm text-emerald-400 font-bold mb-1">
           @{reel.creator}
@@ -209,30 +201,108 @@ return (
         <ShoppingBag className="w-5 h-5" />
         Grab This • {reel.price}
       </button>
-
     </div>
 
-    {/* 4. Checkout Drawer */}
+    {/* Checkout Drawer */}
     {isCheckoutOpen && (
-      // <-- Paste your entire checkout drawer here exactly as you already have it.
       <div className="absolute inset-0 z-50 flex items-end justify-center pointer-events-auto">
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+          onClick={() => {
+            setIsCheckoutOpen(false);
+            setPaymentStatus("idle");
+          }}
+        />
 
-    <div
-      className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-      onClick={() => {
-        setIsCheckoutOpen(false);
-        setPaymentStatus("idle");
-      }}
-    />
+        <div className="relative w-full bg-zinc-900 rounded-t-[2rem] p-6 pb-10 text-white border-t border-zinc-800">
+          <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-8" />
 
-    <div className="relative w-full bg-zinc-900 rounded-t-[2rem] p-6 pb-10 text-white">
-      ...
-    </div>
+          {paymentStatus === "success" ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                🎉
+              </div>
 
-  </div>
-  )}
+              <h3 className="text-2xl font-bold mb-2">
+                Order Confirmed!
+              </h3>
 
-    {/* 5. Comments */}
+              <p className="text-zinc-400">
+                Your {reel.dishName} from {reel.restaurant} is being prepared.
+              </p>
+
+              <button
+                onClick={() => {
+                  setIsCheckoutOpen(false);
+                  setPaymentStatus("idle");
+                }}
+                className="mt-8 w-full bg-zinc-800 hover:bg-zinc-700 font-bold py-4 rounded-2xl"
+              >
+                Close
+              </button>
+            </div>
+          ) : paymentStatus === "form" && clientSecret ? (
+            <div>
+              <h2 className="text-2xl font-bold mb-6">
+                Complete Payment
+              </h2>
+
+              <Elements
+                stripe={stripePromise}
+                options={{
+                  clientSecret,
+                  appearance: {
+                    theme: "night",
+                  },
+                }}
+              >
+                <PaymentForm
+                  amount={reel.price}
+                  onSuccess={() => setPaymentStatus("success")}
+                />
+              </Elements>
+            </div>
+          ) : (
+            <div>
+              <h2 className="text-2xl font-bold mb-1">
+                Confirm Order
+              </h2>
+
+              <p className="text-zinc-400 mb-6">
+                {reel.restaurant}
+              </p>
+
+              <div className="flex justify-between items-center bg-zinc-800/50 p-5 rounded-2xl mb-6 border border-zinc-800">
+                <span className="font-medium text-lg">
+                  {reel.dishName}
+                </span>
+
+                <span className="font-bold text-lg">
+                  {reel.price}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 text-sm text-zinc-400 mb-8">
+                <MapPin className="w-4 h-4" />
+                <p>Delivery to current location • ~25 mins</p>
+              </div>
+
+              <button
+                onClick={handleProceedToPayment}
+                disabled={paymentStatus === "loading"}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg py-4 rounded-2xl disabled:opacity-50"
+              >
+                {paymentStatus === "loading"
+                  ? "Loading checkout..."
+                  : "Proceed to Payment"}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+
+    {/* Comments */}
     {isCommentsOpen && (
       <CommentsSheet
         reelId={reel.id}
@@ -244,7 +314,6 @@ return (
         }}
       />
     )}
-
   </div>
 );
 }
