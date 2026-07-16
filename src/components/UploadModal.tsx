@@ -1,9 +1,12 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { X, UploadCloud, MapPin, Video, Loader2 } from 'lucide-react';
+import type { Reel } from "./ReelItem";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 
 interface UploadModalProps {
   onClose: () => void;
-  onSuccess: (newReel: any) => void;
+  onSuccess: (newReel: Reel) => void;
 }
 
 export default function UploadModal({ onClose, onSuccess }: UploadModalProps) {
@@ -66,7 +69,7 @@ export default function UploadModal({ onClose, onSuccess }: UploadModalProps) {
 
       try {
         // 3. Send it to Express
-        const res = await fetch('http://localhost:3000/reels', {
+        const res = await fetch(`${API_URL}/reels`, {
           method: 'POST',
           credentials: 'include',
           // Notice: NO headers object here! The browser handles the multipart boundary.
@@ -82,10 +85,15 @@ export default function UploadModal({ onClose, onSuccess }: UploadModalProps) {
         onSuccess(data.reel);
         onClose();
 
-      } catch (err: any) {
-        setError(err.message);
-        setIsUploading(false);
-      }
+      } catch (err: unknown) {
+  if (err instanceof Error) {
+    setError(err.message);
+  } else {
+    setError("An unexpected error occurred.");
+  }
+} finally {
+  setIsUploading(false);
+}
     }, () => {
       setError('Please allow location access to tag this food.');
       setIsUploading(false);

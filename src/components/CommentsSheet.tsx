@@ -30,11 +30,12 @@ export default function CommentsSheet({ reelId, currentUser, onClose, onRequestA
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
   // Fetch comments when the sheet opens
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/reels/${reelId}/comments`);
+        const res = await fetch(`${API_URL}/reels/${reelId}/comments`);
         const data = await res.json();
         setComments(data);
         setLoading(false);
@@ -53,7 +54,7 @@ export default function CommentsSheet({ reelId, currentUser, onClose, onRequestA
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:3000/reels/${reelId}/comment`, {
+      const res = await fetch(`${API_URL}/reels/${reelId}/comment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // Important for auth!

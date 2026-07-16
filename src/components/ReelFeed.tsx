@@ -20,6 +20,7 @@ export default function ReelFeed() {
   const [showUpload, setShowUpload] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
   useEffect(() => {
     // 1. Grab user location
     if ('geolocation' in navigator) {
@@ -30,7 +31,7 @@ export default function ReelFeed() {
           
           // 2. Fetch hyper-local food from live Express backend
           try {
-            const response = await fetch(`http://localhost:3000/api/feed?lat=${latitude}&lng=${longitude}`, {
+            const response = await fetch(`${API_URL}/api/feed?lat=${latitude}&lng=${longitude}`, {
               credentials: 'include' // Ensures cookies are sent if user is logged in
             });
             const data = await response.json();
@@ -54,7 +55,7 @@ export default function ReelFeed() {
       setLocationError(true);
       setLoading(false);
     }
-  }, []);
+  }, [API_URL]);
 
   if (loading) {
     return (

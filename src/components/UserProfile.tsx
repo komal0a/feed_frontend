@@ -1,21 +1,42 @@
 import { useState, useEffect } from 'react';
 import { X, Grid, Heart, LogOut, Loader2 } from 'lucide-react';
+import type { Reel } from "./ReelItem";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 interface UserProfileProps {
   userId: string;
   onClose: () => void;
   onLogout: () => void;
 }
+// export interface Reel {
+//   id: string;
+//   videoUrl: string;
+//   restaurant: string;
+//   dishName: string;
+//   price: string;
+//   creator: string;
+//   likeCount: number;
+//   commentCount: number;
+//   lng?: number;
+//   lat?: number;
+// }
 
+interface ProfileData {
+  user: {
+    username: string;
+  };
+  uploads: Reel[];
+  likedReels: Reel[];
+}
 export default function UserProfile({ userId, onClose, onLogout }: UserProfileProps) {
   const [activeTab, setActiveTab] = useState<'likes' | 'uploads'>('likes');
-  const [profileData, setProfileData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+
+const [profileData, setProfileData] = useState<ProfileData | null>(null);  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/users/${userId}/profile`);
+        const res = await fetch(`${API_URL}/users/${userId}/profile`);
         const data = await res.json();
         setProfileData(data);
         setLoading(false);
@@ -25,11 +46,11 @@ export default function UserProfile({ userId, onClose, onLogout }: UserProfilePr
       }
     };
     fetchProfile();
-  }, [userId]);
+  }, [userId, API_URL]);
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:3000/auth/logout', { method: 'POST', credentials: 'include' });
+      await fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
       onLogout();
       onClose();
     } catch (error) {
@@ -45,7 +66,10 @@ export default function UserProfile({ userId, onClose, onLogout }: UserProfilePr
     );
   }
 
-  const displayVideos = activeTab === 'likes' ? profileData.likedReels : profileData.uploads;
+const displayVideos =
+  activeTab === "likes"
+    ? profileData?.likedReels ?? []
+    : profileData?.uploads ?? [];
 
   return (
     <div className="absolute inset-0 z-[100] bg-black text-white flex flex-col animate-in slide-in-from-right duration-300 pointer-events-auto">
@@ -98,8 +122,8 @@ export default function UserProfile({ userId, onClose, onLogout }: UserProfilePr
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-0.5">
-            {displayVideos.map((video: any) => (
-              <div key={video._id} className="aspect-[9/16] bg-zinc-900 relative">
+            {displayVideos.map((video: Reel) => (
+              <div key={video._id || video.id} className="aspect-[9/16] bg-zinc-900 relative">
                 <video src={video.videoUrl} className="w-full h-full object-cover" />
               </div>
             ))}

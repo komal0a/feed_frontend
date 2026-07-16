@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { X } from 'lucide-react';
+import type { User } from './ReelItem';
+
 
 interface AuthModalProps {
   onClose: () => void;
-  onSuccess: (user: any) => void;
+  onSuccess: (user: User) => void;
 }
 
 export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
@@ -20,14 +22,17 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
     const endpoint = isLogin ? '/auth/login' : '/auth/register';
     const payload = isLogin ? { email, password } : { username, email, password };
 
-    try {
-      const res = await fetch(`http://localhost:3000${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // <--- CRITICAL for cookies!
-        body: JSON.stringify(payload)
-      });
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
+try {
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error || 'Something went wrong');
@@ -40,9 +45,13 @@ export default function AuthModal({ onClose, onSuccess }: AuthModalProps) {
         setIsLogin(true);
         setError('Registration successful! Please log in.');
       }
-    } catch (err: any) {
-      setError(err.message);
-    }
+    } catch (err: unknown) {
+  if (err instanceof Error) {
+    setError(err.message);
+  } else {
+    setError("An unexpected error occurred.");
+  }
+}
   };
 
   return (

@@ -16,6 +16,7 @@ email: string;
 }
 
 export interface Reel {
+  _id?: string;
 id: string;
 videoUrl: string;
 restaurant: string;
